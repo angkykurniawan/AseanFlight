@@ -1,7 +1,7 @@
 // ============================================================
 // FlightMap.jsx – Peta react-leaflet dengan marker pesawat
 // ============================================================
-import { useEffect, Component } from 'react';
+import { useState, useEffect, Component } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -18,11 +18,36 @@ L.Icon.Default.mergeOptions({
   shadowUrl:     new URL('leaflet/dist/images/marker-shadow.png',  import.meta.url).href,
 });
 
-/* ---- Komponen internal: bereaksi pada perubahan bounds / flyTo ---- */
-function MapController({ filterCountry, selectedFlight }) {
+/* ---- Komponen internal: bereaksi pada perubahan bounds / flyTo / status kunci ---- */
+function MapController({ filterCountry, selectedFlight, isLocked }) {
   const map = useMap();
 
-  // Zoom ke negara terpilih
+  // Kunci atau buka interaksi gestur peta (dragging, touch, scroll)
+  useEffect(() => {
+    if (isLocked) {
+      map.dragging.disable();
+      map.touchZoom.disable();
+      map.scrollWheelZoom.disable();
+      map.doubleClickZoom.disable();
+      map.boxZoom.disable();
+      map.keyboard.disable();
+      if (filterCountry && filterCountry !== 'all') {
+        const bounds = getCountryBounds(filterCountry);
+        if (bounds) map.fitBounds(bounds, { padding: [30, 30], maxZoom: 8 });
+      } else {
+        map.fitBounds(ASEAN_MAP_BOUNDS, { padding: [20, 20] });
+      }
+    } else {
+      map.dragging.enable();
+      map.touchZoom.enable();
+      map.scrollWheelZoom.enable();
+      map.doubleClickZoom.enable();
+      map.boxZoom.enable();
+      map.keyboard.enable();
+    }
+  }, [isLocked, map, filterCountry]);
+
+  // Zoom ke negara terpilih saat filter berganti
   useEffect(() => {
     if (filterCountry && filterCountry !== 'all') {
       const bounds = getCountryBounds(filterCountry);
@@ -71,6 +96,8 @@ class MapErrorBoundary extends Component {
  * @param {function} onSelectFlight
  */
 export default function FlightMap({ flights, filterCountry, selectedFlight, onSelectFlight }) {
+  const [isLocked, setIsLocked] = useState(true);
+
   // Ambil Carto Basemap API Key untuk menghilangkan watermark 'API KEY REQUIRED'
   const cartoKey = (
     import.meta.env.VITE_CARTO_API_KEY ||
@@ -91,10 +118,21 @@ export default function FlightMap({ flights, filterCountry, selectedFlight, onSe
             ({flights.length} pesawat)
           </span>
         </h2>
-        <AircraftSearch
-          flights={flights}
-          onSelectFlight={onSelectFlight}
-        />
+        <div className="map-card__actions">
+          <button
+            type="button"
+            className={`map-lock-btn ${isLocked ? 'map-lock-btn--locked' : ''}`}
+            onClick={() => setIsLocked((prev) => !prev)}
+            title={isLocked ? 'Peta terkunci (klik untuk mengizinkan geser/zoom peta)' : 'Peta bebas geser (klik untuk mengunci posisi peta)'}
+            aria-label={isLocked ? 'Buka kunci interaksi peta' : 'Kunci posisi peta'}
+          >
+            {isLocked ? '🔒 Posisi Tetap' : '🔓 Mode Geser'}
+          </button>
+          <AircraftSearch
+            flights={flights}
+            onSelectFlight={onSelectFlight}
+          />
+        </div>
       </div>
 
       <div className="map-container">
@@ -102,8 +140,15 @@ export default function FlightMap({ flights, filterCountry, selectedFlight, onSe
           <MapContainer
             bounds={ASEAN_MAP_BOUNDS}
             boundsOptions={{ padding: [20, 20] }}
+            maxBounds={ASEAN_MAP_BOUNDS}
+            maxBoundsViscosity={1.0}
+            dragging={false}
+            touchZoom={false}
+            scrollWheelZoom={false}
+            doubleClickZoom={false}
+            boxZoom={false}
+            keyboard={false}
             style={{ height: '100%', width: '100%' }}
-            scrollWheelZoom={true}
             aria-label="Peta wilayah udara ASEAN"
           >
             <TileLayer
@@ -115,6 +160,7 @@ export default function FlightMap({ flights, filterCountry, selectedFlight, onSe
             <MapController
               filterCountry={filterCountry}
               selectedFlight={selectedFlight}
+              isLocked={isLocked}
             />
             {flights.map((flight) => (
               <AircraftMarker key={flight.icao24} flight={flight} />

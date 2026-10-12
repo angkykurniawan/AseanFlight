@@ -542,6 +542,45 @@ body {
   color: var(--color-navy);
 }
 
+.map-card__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.map-lock-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.map-lock-btn:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.map-lock-btn--locked {
+  background: rgba(0, 135, 90, 0.12);
+  color: var(--color-accent);
+  border-color: rgba(0, 135, 90, 0.35);
+}
+
+.map-lock-btn--locked:hover {
+  background: rgba(0, 135, 90, 0.2);
+  color: var(--color-accent);
+}
+
 .map-container {
   flex: 1;
   min-height: 460px;
