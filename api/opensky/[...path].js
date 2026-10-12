@@ -14,8 +14,8 @@ export default async function handler(req) {
   const headers = { 'User-Agent': 'SkyWatch-ASEAN/1.0' };
 
   // Basic Auth bila credentials tersedia (di-set di Vercel Environment Variables)
-  const user = process.env.OPENSKY_USER ?? '';
-  const pass = process.env.OPENSKY_PASS ?? '';
+  const user = process.env.OPENSKY_USER ?? process.env.VITE_OPENSKY_USER ?? '';
+  const pass = process.env.OPENSKY_PASS ?? process.env.VITE_OPENSKY_PASS ?? '';
   if (user && pass) {
     const token = btoa(`${user}:${pass}`);
     headers['Authorization'] = `Basic ${token}`;
