@@ -14,7 +14,9 @@ export default async function handler(req) {
   const headers = { 'User-Agent': 'SkyWatch-ASEAN/1.0' };
 
   // API Key autentikasi (bila di-set di Vercel Environment Variables atau .env)
-  const apiKey = (process.env.OPENSKY_API_KEY ?? process.env.VITE_OPENSKY_API_KEY ?? '').trim();
+  const rawApiKey = (process.env.OPENSKY_API_KEY ?? process.env.VITE_OPENSKY_API_KEY ?? '').trim();
+  // Kunci Carto Basemaps (berawalan cb1_) jangan pernah dikirim ke OpenSky
+  const apiKey = rawApiKey.startsWith('cb1_') ? '' : rawApiKey;
   if (apiKey) {
     const authHeader = apiKey.startsWith('Bearer ') ? apiKey : `Bearer ${apiKey}`;
     headers['Authorization'] = authHeader;

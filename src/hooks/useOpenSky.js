@@ -144,7 +144,16 @@ export function useOpenSky(onRefreshRef) {
           nextIntervalRef.current = backoffMs;
           setDataStatusRef.current('rate-limited');
           setRateLimitBannerRef.current(true);
-          onRefreshRefLocal.current?.current?.(null);
+          // Bila data penerbangan belum ada, isi dengan sampel agar dashboard tidak kosong
+          setFlightsRef.current((prev) => {
+            if (!prev || prev.length === 0) {
+              const sampleData = getSampleData();
+              onRefreshRefLocal.current?.current?.(sampleData);
+              return sampleData;
+            }
+            onRefreshRefLocal.current?.current?.(prev);
+            return prev;
+          });
           addLogRef.current?.({
             level: 'warn',
             category: 'api',
@@ -158,13 +167,18 @@ export function useOpenSky(onRefreshRef) {
 
         // --- Respons non-OK lainnya ---
         if (!res.ok) {
-          setDataStatusRef.current('offline');
+          // Bila gagal (misal 401 token keliru, 502 server down), gunakan dataset demo agar tidak kosong
+          const sampleData = getSampleData();
+          setFlightsRef.current((prev) => (prev && prev.length > 0 ? prev : sampleData));
+          setDataStatusRef.current('demo');
           setRateLimitBannerRef.current(false);
+          setLastUpdatedRef.current(new Date());
+          onRefreshRefLocal.current?.current?.(sampleData);
           addLogRef.current?.({
-            level: 'error',
+            level: 'warn',
             category: 'api',
-            message: `Gagal memuat OpenSky API (HTTP ${res.status}: ${res.statusText || 'Error'})`,
-            details: `Latency: ${latency}ms · Status: offline`,
+            message: `Gagal memuat OpenSky API (HTTP ${res.status}: ${res.statusText || 'Error'}). Menggunakan dataset demo lokal`,
+            details: `Latency: ${latency}ms · Status: demo fallback`,
           });
           startCountdown(nextIntervalRef.current);
           isFetchingRef.current = false;

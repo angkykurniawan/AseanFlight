@@ -5,7 +5,9 @@ export default defineConfig(({ mode }) => {
   // Baca .env di sini agar bisa dipakai di konfigurasi server proxy
   const env = loadEnv(mode, process.cwd(), '');
 
-  const apiKey = (env.VITE_OPENSKY_API_KEY ?? env.OPENSKY_API_KEY ?? '').trim();
+  const rawApiKey = (env.VITE_OPENSKY_API_KEY ?? env.OPENSKY_API_KEY ?? '').trim();
+  // Kunci Carto Basemaps (berawalan cb1_) jangan pernah dikirim ke OpenSky
+  const apiKey = rawApiKey.startsWith('cb1_') ? '' : rawApiKey;
 
   // Buat header Authorization / API Key bila kredensial tersedia
   const proxyHeaders = {};

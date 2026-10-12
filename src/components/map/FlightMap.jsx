@@ -71,6 +71,17 @@ class MapErrorBoundary extends Component {
  * @param {function} onSelectFlight
  */
 export default function FlightMap({ flights, filterCountry, selectedFlight, onSelectFlight }) {
+  // Ambil Carto Basemap API Key untuk menghilangkan watermark 'API KEY REQUIRED'
+  const cartoKey = (
+    import.meta.env.VITE_CARTO_API_KEY ||
+    (import.meta.env.VITE_OPENSKY_API_KEY?.startsWith('cb1_') ? import.meta.env.VITE_OPENSKY_API_KEY : '') ||
+    'cb1_4hle_1_97c69280b10b32db4f60879e'
+  ).trim();
+
+  const tileUrl = cartoKey
+    ? `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=${cartoKey}`
+    : `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png`;
+
   return (
     <div className="map-card">
       <div className="map-card__header">
@@ -96,7 +107,7 @@ export default function FlightMap({ flights, filterCountry, selectedFlight, onSe
             aria-label="Peta wilayah udara ASEAN"
           >
             <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+              url={tileUrl}
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
               subdomains="abcd"
               maxZoom={19}
