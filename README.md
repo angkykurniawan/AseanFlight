@@ -7,6 +7,10 @@
 Website Link: https://asean-flight-ochre.vercel.app/
 akadmin - pass#123
 
+## Usage Use
+Jika terjadi error pada saat load data di production, itu dikarenakan pemblokiran request dari penyedia API.
+Solusinya adalah jalankan di local/development
+
 ## Prasyarat
 
 - **Node.js ≥ 18** dan **npm ≥ 9**
