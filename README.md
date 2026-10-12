@@ -12,7 +12,7 @@
 
 ---
 
-## Cara Menjalankan
+## Cara Menjalankan di local
 
 ```bash
 npm install
