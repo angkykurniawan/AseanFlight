@@ -523,6 +523,7 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .map-card__header {

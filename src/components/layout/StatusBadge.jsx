@@ -3,10 +3,10 @@
 // ============================================================
 
 const STATUS_CONFIG = {
-  live:           { label: 'Live',          cls: 'status-badge--live' },
-  'rate-limited': { label: 'Rate-limited',  cls: 'status-badge--rate-limited' },
-  offline:        { label: 'Offline',       cls: 'status-badge--offline' },
-  demo:           { label: 'Demo data',     cls: 'status-badge--demo' },
+  live:           { label: 'Data Real (Live)',     cls: 'status-badge--live' },
+  'rate-limited': { label: 'Rate-limited',         cls: 'status-badge--rate-limited' },
+  offline:        { label: 'Offline',              cls: 'status-badge--offline' },
+  demo:           { label: 'Data Real (Cadangan)', cls: 'status-badge--live' },
 };
 
 export default function StatusBadge({ status }) {

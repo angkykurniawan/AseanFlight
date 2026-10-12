@@ -39,31 +39,31 @@ export default function App() {
     <>
       <Header />
       <main className="app-main" id="main-content">
-        {/* Semua tab di-render di sini; tab aktif yang visible */}
-        <div style={{ display: activeTab === 'overview'  ? 'contents' : 'none' }}>
+        {/* Render tab aktif agar komponen peta dan visualisasi tidak terinisialisasi dalam kondisi tersembunyi (0x0 size) */}
+        {activeTab === 'overview' && (
           <OverviewTab
             allFlights={flights}
             history={history}
             onRefresh={handleRefresh}
             isRefreshing={isRefreshing}
           />
-        </div>
-        <div style={{ display: activeTab === 'livemap'   ? 'contents' : 'none' }}>
+        )}
+        {activeTab === 'livemap' && (
           <LiveMapTab
             allFlights={flights}
             onRefresh={handleRefresh}
             isRefreshing={isRefreshing}
           />
-        </div>
-        <div style={{ display: activeTab === 'countries' ? 'contents' : 'none' }}>
+        )}
+        {activeTab === 'countries' && (
           <CountriesTab allFlights={flights} />
-        </div>
-        <div style={{ display: activeTab === 'data'      ? 'contents' : 'none' }}>
+        )}
+        {activeTab === 'data' && (
           <DataTab allFlights={flights} />
-        </div>
-        <div style={{ display: activeTab === 'logs'      ? 'contents' : 'none' }}>
+        )}
+        {activeTab === 'logs' && (
           <ActivityLogTab />
-        </div>
+        )}
       </main>
     </>
   );

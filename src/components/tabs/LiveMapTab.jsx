@@ -45,7 +45,7 @@ export default function LiveMapTab({ allFlights, onRefresh, isRefreshing }) {
       <WarningBanner visible={rateLimitBanner} countdown={countdown} />
       <FilterBar onRefresh={onRefresh} isRefreshing={isRefreshing} />
 
-      <div style={{ height: '65vh', minHeight: 420 }}>
+      <div style={{ height: '75vh', minHeight: 520, display: 'flex', flexDirection: 'column' }}>
         <FlightMap
           flights={filteredFlights}
           filterCountry={filterCountry}

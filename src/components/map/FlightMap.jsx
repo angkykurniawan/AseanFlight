@@ -18,9 +18,31 @@ L.Icon.Default.mergeOptions({
   shadowUrl:     new URL('leaflet/dist/images/marker-shadow.png',  import.meta.url).href,
 });
 
-/* ---- Komponen internal: bereaksi pada perubahan bounds / flyTo / status kunci ---- */
 function MapController({ filterCountry, selectedFlight, isLocked }) {
   const map = useMap();
+
+  // Pastikan Leaflet menghitung ulang ukuran container agar tile dan marker langsung tampil sempurna
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+
+    let ro;
+    if (typeof ResizeObserver !== 'undefined') {
+      const container = map.getContainer();
+      if (container) {
+        ro = new ResizeObserver(() => {
+          map.invalidateSize();
+        });
+        ro.observe(container);
+      }
+    }
+
+    return () => {
+      clearTimeout(timer);
+      if (ro) ro.disconnect();
+    };
+  }, [map]);
 
   // Kunci atau buka interaksi gestur peta (dragging, touch, scroll)
   useEffect(() => {

@@ -4,6 +4,10 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/api/opensky/:match*",
+      "destination": "https://opensky-network.org/api/:match*"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
