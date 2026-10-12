@@ -35,6 +35,54 @@ export function FlightProvider({ children }) {
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [activeTab, setActiveTab]           = useState('overview');
 
+  // Log Aktivitas Real-Time
+  const [logs, setLogs] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('skywatch_logs');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.map((item) => ({ ...item, timestamp: new Date(item.timestamp) }));
+      }
+    } catch {
+      // Abaikan bila storage gagal diakses
+    }
+    return [
+      {
+        id: `log-init-${Date.now()}`,
+        timestamp: new Date(),
+        level: 'info',
+        category: 'system',
+        message: 'Sistem SkyWatch ASEAN diinisialisasi',
+        details: 'IBM Global AI Builders Challenge · Aviation Track',
+      },
+    ];
+  });
+
+  const addLog = useCallback((entry) => {
+    const newLog = {
+      id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      timestamp: new Date(),
+      level: entry.level || 'info', // 'info' | 'success' | 'warn' | 'error'
+      category: entry.category || 'system', // 'api' | 'radar' | 'user' | 'system'
+      message: entry.message || '',
+      details: entry.details || null,
+    };
+    setLogs((prev) => {
+      const updated = [newLog, ...prev.slice(0, 499)];
+      try {
+        sessionStorage.setItem('skywatch_logs', JSON.stringify(updated.slice(0, 100)));
+      } catch {}
+      return updated;
+    });
+  }, []);
+
+  const clearLogs = useCallback(() => {
+    setLogs([]);
+    try {
+      sessionStorage.removeItem('skywatch_logs');
+    } catch {}
+  }, []);
+
   const clearFilters = useCallback(() => {
     setFilterCountry('all');
     setFilterStatus('all');
@@ -52,6 +100,7 @@ export function FlightProvider({ children }) {
     filterAltCategory, setFilterAltCategory,
     selectedFlight, setSelectedFlight,
     activeTab, setActiveTab,
+    logs, addLog, clearLogs,
     clearFilters,
   };
 

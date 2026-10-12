@@ -10,6 +10,7 @@ import OverviewTab  from './components/tabs/OverviewTab.jsx';
 import LiveMapTab   from './components/tabs/LiveMapTab.jsx';
 import CountriesTab from './components/tabs/CountriesTab.jsx';
 import DataTab      from './components/tabs/DataTab.jsx';
+import ActivityLogTab from './components/tabs/ActivityLogTab.jsx';
 
 export default function App() {
   const { flights, activeTab } = useFlightContext();
@@ -59,6 +60,9 @@ export default function App() {
         </div>
         <div style={{ display: activeTab === 'data'      ? 'contents' : 'none' }}>
           <DataTab allFlights={flights} />
+        </div>
+        <div style={{ display: activeTab === 'logs'      ? 'contents' : 'none' }}>
+          <ActivityLogTab />
         </div>
       </main>
     </>

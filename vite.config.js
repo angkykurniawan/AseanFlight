@@ -5,14 +5,22 @@ export default defineConfig(({ mode }) => {
   // Baca .env di sini agar bisa dipakai di konfigurasi server proxy
   const env = loadEnv(mode, process.cwd(), '');
 
-  const openskyUser = env.VITE_OPENSKY_USER ?? '';
-  const openskyPass = env.VITE_OPENSKY_PASS ?? '';
+  const apiKey = (env.VITE_OPENSKY_API_KEY ?? env.OPENSKY_API_KEY ?? '').trim();
 
-  // Buat header Authorization Basic bila kredensial tersedia
+  // Buat header Authorization / API Key bila kredensial tersedia
   const proxyHeaders = {};
-  if (openskyUser && openskyPass) {
-    const token = Buffer.from(`${openskyUser}:${openskyPass}`).toString('base64');
-    proxyHeaders['Authorization'] = `Basic ${token}`;
+  if (apiKey) {
+    const authHeader = apiKey.startsWith('Bearer ') ? apiKey : `Bearer ${apiKey}`;
+    proxyHeaders['Authorization'] = authHeader;
+    proxyHeaders['x-api-key'] = apiKey;
+  } else {
+    // Fallback bila masih ada username:password
+    const openskyUser = env.VITE_OPENSKY_USER ?? '';
+    const openskyPass = env.VITE_OPENSKY_PASS ?? '';
+    if (openskyUser && openskyPass) {
+      const token = Buffer.from(`${openskyUser}:${openskyPass}`).toString('base64');
+      proxyHeaders['Authorization'] = `Basic ${token}`;
+    }
   }
 
   return {

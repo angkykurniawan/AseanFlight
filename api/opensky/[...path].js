@@ -13,12 +13,20 @@ export default async function handler(req) {
   // Bangun headers untuk upstream
   const headers = { 'User-Agent': 'SkyWatch-ASEAN/1.0' };
 
-  // Basic Auth bila credentials tersedia (di-set di Vercel Environment Variables)
-  const user = process.env.OPENSKY_USER ?? process.env.VITE_OPENSKY_USER ?? '';
-  const pass = process.env.OPENSKY_PASS ?? process.env.VITE_OPENSKY_PASS ?? '';
-  if (user && pass) {
-    const token = btoa(`${user}:${pass}`);
-    headers['Authorization'] = `Basic ${token}`;
+  // API Key autentikasi (bila di-set di Vercel Environment Variables atau .env)
+  const apiKey = (process.env.OPENSKY_API_KEY ?? process.env.VITE_OPENSKY_API_KEY ?? '').trim();
+  if (apiKey) {
+    const authHeader = apiKey.startsWith('Bearer ') ? apiKey : `Bearer ${apiKey}`;
+    headers['Authorization'] = authHeader;
+    headers['x-api-key'] = apiKey;
+  } else {
+    // Fallback bila masih ada username + password
+    const user = process.env.OPENSKY_USER ?? process.env.VITE_OPENSKY_USER ?? '';
+    const pass = process.env.OPENSKY_PASS ?? process.env.VITE_OPENSKY_PASS ?? '';
+    if (user && pass) {
+      const token = btoa(`${user}:${pass}`);
+      headers['Authorization'] = `Basic ${token}`;
+    }
   }
 
   try {

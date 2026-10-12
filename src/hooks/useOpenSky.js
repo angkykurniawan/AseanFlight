@@ -56,6 +56,7 @@ export function useOpenSky(onRefreshRef) {
     setLastUpdated,
     setCountdown,
     setRateLimitBanner,
+    addLog,
   } = useFlightContext();
 
   // --- State refs (tidak menyebabkan re-render) ---
@@ -75,6 +76,7 @@ export function useOpenSky(onRefreshRef) {
   const setLastUpdatedRef    = useRef(setLastUpdated);
   const setRateLimitBannerRef = useRef(setRateLimitBanner);
   const onRefreshRefLocal    = useRef(onRefreshRef);
+  const addLogRef            = useRef(addLog);
 
   // Sinkronkan ref setiap render (setter dari useState stabil, tapi tetap aman)
   setCountdownRef.current      = setCountdown;
@@ -83,6 +85,7 @@ export function useOpenSky(onRefreshRef) {
   setLastUpdatedRef.current    = setLastUpdated;
   setRateLimitBannerRef.current = setRateLimitBanner;
   onRefreshRefLocal.current    = onRefreshRef;
+  addLogRef.current            = addLog;
 
   /** Ref ke manualRefresh agar komponen luar bisa memanggilnya */
   const manualRefreshRef = useRef(null);
@@ -117,10 +120,14 @@ export function useOpenSky(onRefreshRef) {
       if (abortCtrlRef.current) abortCtrlRef.current.abort();
       abortCtrlRef.current = new AbortController();
 
+      const startTime = performance.now();
+
       try {
         const res = await fetch(buildApiUrl(), {
           signal: abortCtrlRef.current.signal,
         });
+
+        const latency = Math.round(performance.now() - startTime);
 
         if (!mountedRef.current) return;
 
@@ -138,6 +145,12 @@ export function useOpenSky(onRefreshRef) {
           setDataStatusRef.current('rate-limited');
           setRateLimitBannerRef.current(true);
           onRefreshRefLocal.current?.current?.(null);
+          addLogRef.current?.({
+            level: 'warn',
+            category: 'api',
+            message: `Batas kuota OpenSky tercapai (HTTP 429). Mengaktifkan backoff jeda ${backoffMs / 1000} detik`,
+            details: `Latency: ${latency}ms · Status: rate-limited · Kuota harian habis`,
+          });
           startCountdown(backoffMs);
           isFetchingRef.current = false;
           return;
@@ -147,6 +160,12 @@ export function useOpenSky(onRefreshRef) {
         if (!res.ok) {
           setDataStatusRef.current('offline');
           setRateLimitBannerRef.current(false);
+          addLogRef.current?.({
+            level: 'error',
+            category: 'api',
+            message: `Gagal memuat OpenSky API (HTTP ${res.status}: ${res.statusText || 'Error'})`,
+            details: `Latency: ${latency}ms · Status: offline`,
+          });
           startCountdown(nextIntervalRef.current);
           isFetchingRef.current = false;
           return;
@@ -163,6 +182,12 @@ export function useOpenSky(onRefreshRef) {
         setRateLimitBannerRef.current(false);
         setLastUpdatedRef.current(new Date());
         onRefreshRefLocal.current?.current?.(flights);
+        addLogRef.current?.({
+          level: 'success',
+          category: 'api',
+          message: `Data radar berhasil diperbarui: ${flights.length} pesawat terdeteksi di ruang udara ASEAN`,
+          details: `Latency: ${latency}ms · Mode: LIVE · Interval berikutnya: ${POLL_INTERVAL_MS / 1000}s`,
+        });
         startCountdown(POLL_INTERVAL_MS);
       } catch (err) {
         if (!mountedRef.current) return;
@@ -177,6 +202,12 @@ export function useOpenSky(onRefreshRef) {
         setRateLimitBannerRef.current(false);
         setLastUpdatedRef.current(new Date());
         onRefreshRefLocal.current?.current?.(sampleData);
+        addLogRef.current?.({
+          level: 'warn',
+          category: 'api',
+          message: `Koneksi ke API OpenSky bermasalah (${err.message}). Menggunakan dataset demo lokal`,
+          details: `Fallback: ${sampleData.length} pesawat sampel · Mode: DEMO`,
+        });
         startCountdown(nextIntervalRef.current);
       } finally {
         isFetchingRef.current = false;
@@ -194,6 +225,11 @@ export function useOpenSky(onRefreshRef) {
 
     // Simpan ke ref agar manualRefresh bisa memakai versi terkini
     manualRefreshRef.current = () => {
+      addLogRef.current?.({
+        level: 'info',
+        category: 'user',
+        message: 'Pengguna melakukan refresh manual data radar',
+      });
       if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
       fetchFlights().then(() => {
         if (!mountedRef.current) return;

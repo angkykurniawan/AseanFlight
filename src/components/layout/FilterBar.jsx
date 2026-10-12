@@ -14,7 +14,49 @@ export default function FilterBar({ onRefresh, isRefreshing }) {
     filterStatus,  setFilterStatus,
     filterAltCategory, setFilterAltCategory,
     clearFilters,
+    addLog,
   } = useFlightContext();
+
+  function handleCountryChange(e) {
+    const val = e.target.value;
+    setFilterCountry(val);
+    const cName = val === 'all' ? 'Semua ASEAN' : (ASEAN_COUNTRIES.find((c) => c.code === val)?.name || val);
+    addLog({
+      level: 'info',
+      category: 'user',
+      message: `Filter negara diubah ke: ${cName}`,
+    });
+  }
+
+  function handleStatusChange(e) {
+    const val = e.target.value;
+    setFilterStatus(val);
+    const sName = val === 'all' ? 'Semua' : val === 'airborne' ? 'Di Udara' : 'Di Darat';
+    addLog({
+      level: 'info',
+      category: 'user',
+      message: `Filter status penerbangan diubah ke: ${sName}`,
+    });
+  }
+
+  function handleAltChange(e) {
+    const val = e.target.value;
+    setFilterAltCategory(val);
+    addLog({
+      level: 'info',
+      category: 'user',
+      message: `Filter ketinggian diubah ke: ${val === 'all' ? 'Semua Ketinggian' : val}`,
+    });
+  }
+
+  function handleResetFilters() {
+    clearFilters();
+    addLog({
+      level: 'info',
+      category: 'user',
+      message: 'Semua filter penerbangan di-reset ke nilai default',
+    });
+  }
 
   return (
     <div className="filter-bar" role="search" aria-label="Filter penerbangan">
@@ -29,7 +71,7 @@ export default function FilterBar({ onRefresh, isRefreshing }) {
           id="filter-country"
           className="filter-bar__select"
           value={filterCountry}
-          onChange={(e) => setFilterCountry(e.target.value)}
+          onChange={handleCountryChange}
           aria-label="Filter berdasarkan negara"
         >
           <option value="all">Semua ASEAN</option>
@@ -48,7 +90,7 @@ export default function FilterBar({ onRefresh, isRefreshing }) {
           id="filter-status"
           className="filter-bar__select"
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
+          onChange={handleStatusChange}
           aria-label="Filter berdasarkan status"
         >
           <option value="all">Semua</option>
@@ -66,7 +108,7 @@ export default function FilterBar({ onRefresh, isRefreshing }) {
           id="filter-alt"
           className="filter-bar__select"
           value={filterAltCategory}
-          onChange={(e) => setFilterAltCategory(e.target.value)}
+          onChange={handleAltChange}
           aria-label="Filter berdasarkan kategori ketinggian"
         >
           <option value="all">Semua Ketinggian</option>
@@ -79,7 +121,7 @@ export default function FilterBar({ onRefresh, isRefreshing }) {
       {/* Tombol Reset */}
       <button
         className="filter-bar__btn filter-bar__btn--secondary"
-        onClick={clearFilters}
+        onClick={handleResetFilters}
         aria-label="Reset semua filter"
         title="Reset semua filter"
       >

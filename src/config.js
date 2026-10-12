@@ -128,6 +128,7 @@ export const NAV_TABS = [
   { id: 'livemap',   label: 'Peta Live' },
   { id: 'countries', label: 'Negara ASEAN' },
   { id: 'data',      label: 'Data' },
+  { id: 'logs',      label: 'Log Aktivitas' },
 ];
 
 // Jumlah baris maksimal di tab Data

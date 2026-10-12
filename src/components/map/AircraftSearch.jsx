@@ -3,12 +3,14 @@
 // ============================================================
 import { useState, useRef, useEffect } from 'react';
 import { useDebounce } from '../../hooks/useDebounce.js';
+import { useFlightContext } from '../../context/FlightContext.jsx';
 
 /**
  * @param {object[]} flights         – daftar pesawat terkini
  * @param {function} onSelectFlight  – dipanggil dengan objek flight terpilih
  */
 export default function AircraftSearch({ flights, onSelectFlight }) {
+  const { addLog }            = useFlightContext();
   const [query, setQuery]     = useState('');
   const [open, setOpen]       = useState(false);
   const debouncedQuery        = useDebounce(query, 350);
@@ -40,9 +42,16 @@ export default function AircraftSearch({ flights, onSelectFlight }) {
   }, []);
 
   function handleSelect(flight) {
-    setQuery(flight.callsign !== 'N/A' ? flight.callsign : flight.icao24);
+    const cs = flight.callsign !== 'N/A' ? flight.callsign : flight.icao24;
+    setQuery(cs);
     setOpen(false);
     onSelectFlight(flight);
+    addLog({
+      level: 'info',
+      category: 'radar',
+      message: `Pesawat dipilih pada radar: ${cs} (${flight.originCountry})`,
+      details: `Ketinggian: ${flight.altitudeM}m · Kecepatan: ${flight.velocityKmh} km/h · Wilayah: ${flight.airspaceCountry || 'Internasional'}`,
+    });
   }
 
   function handleKeyDown(e, flight) {

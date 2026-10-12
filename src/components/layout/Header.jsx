@@ -15,8 +15,35 @@ function formatDateTime(date) {
 }
 
 export default function Header() {
-  const { dataStatus, lastUpdated, countdown, activeTab, setActiveTab } = useFlightContext();
+  const { dataStatus, lastUpdated, countdown, activeTab, setActiveTab, addLog } = useFlightContext();
   const { user, logout } = useAuth();
+
+  function handleLogout() {
+    addLog({
+      level: 'info',
+      category: 'user',
+      message: `Pengguna '${user?.username || 'akadmin'}' logout dari dashboard`,
+    });
+    logout();
+  }
+
+  function handleTabChange(tabId) {
+    if (tabId !== activeTab) {
+      const tabNames = {
+        overview:  'Ikhtisar',
+        livemap:   'Peta Live',
+        countries: 'Negara ASEAN',
+        data:      'Data Pesawat',
+        logs:      'Log Aktivitas',
+      };
+      addLog({
+        level: 'info',
+        category: 'user',
+        message: `Membuka tab navigasi: ${tabNames[tabId] || tabId}`,
+      });
+      setActiveTab(tabId);
+    }
+  }
 
   return (
     <header className="header" role="banner">
@@ -52,7 +79,7 @@ export default function Header() {
               <span className="header__user-name">{user.username}</span>
               <button
                 className="header__logout-btn"
-                onClick={logout}
+                onClick={handleLogout}
                 aria-label="Keluar dari dashboard"
                 title="Keluar"
               >
@@ -64,7 +91,7 @@ export default function Header() {
       </div>
 
       {/* Nav Pills */}
-      <NavPills activeTab={activeTab} onTabChange={setActiveTab} />
+      <NavPills activeTab={activeTab} onTabChange={handleTabChange} />
     </header>
   );
 }
