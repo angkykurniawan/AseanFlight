@@ -1,7 +1,7 @@
 {
   "version": 2,
   "installCommand": "npm install",
-  "buildCommand": "npm run build",
+  "buildCommand": "npx vite build",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
